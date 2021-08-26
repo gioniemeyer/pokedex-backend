@@ -1,18 +1,48 @@
 import { getRepository } from "typeorm";
 import { SignUpSchema } from "../schemas/loginSchemas";
-
+import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
 import User from "../entities/User";
-import { SignUpInterface } from "../interfaces/loginInterfaces";
+import { SignUpInterface, SignInInterface } from "../interfaces/loginInterfaces";
+import Session from "../entities/Session";
 
 export async function signUp (user: SignUpInterface) {
 
+  const {error} = SignUpSchema.validate(user);
+	if(error) return undefined;
 
-	const {error} = SignUpSchema.validate(user);
+  const { email, password } = user;
 
-	if(error) return false;
-	const users = await getRepository(User).find({
-		select: ["id", "email"]
-	});
-  
-	return users;
+  const existingUser = await validateEmail(email);
+
+  if (existingUser) return false;
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  await getRepository(User).insert({ email, password: hashedPassword });
+
+  return true;
+}
+
+async function validateEmail(email: string) {
+  const user = await getRepository(User).findOne({
+    where: { email },
+  });
+
+  return user;
+}
+
+export async function signIn(user:SignInInterface) {
+
+  const {error} = SignUpSchema.validate(user);
+	if(error) return undefined;
+
+  const { email, password } = user;
+  const existingUser = await validateEmail(email);
+  if (existingUser && bcrypt.compareSync(existingUser.password, password)) {
+    const token = uuid();
+    await getRepository(Session).insert({token, userId: existingUser.id});
+    return token;
+  };
+  return false;
 }
