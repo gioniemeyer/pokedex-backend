@@ -24,6 +24,7 @@ app.post("/sign-up", userController.signUp);
 app.post("/sign-in", userController.signIn);
 app.get("/pokemons", auth, pokemonController.getPokemon);
 app.post("/my-pokemons/:id/add", auth, pokemonController.catchPokemon);
+app.post("/my-pokemons/:id/remove", auth, pokemonController.releasePokemon);
 
 app.use("/populate", async (req,res)=>{
  

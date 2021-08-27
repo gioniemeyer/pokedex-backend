@@ -31,7 +31,7 @@ export async function getPokemon (userId: number) {
 	return response;
 }
 
-export async function catchPokemon (userId: number, pokemonId: number) {
+export async function catchOrRemovePokemon (userId: number, pokemonId: number, text: string) {
 	const user = await getRepository(User).findOne({
 		where: {id: userId}
 	});
@@ -41,6 +41,12 @@ export async function catchPokemon (userId: number, pokemonId: number) {
 		relations: ["users"],
 	});
 
-	pokemon.users.push(user);
-	await getRepository(Pokemon).save(pokemon);
+	if(text === "add") {
+		pokemon.users.push(user);
+		await getRepository(Pokemon).save(pokemon);
+	} else {
+		pokemon.users = pokemon.users.filter(u => u.id !== userId);
+		await getRepository(Pokemon).save(pokemon);
+	}
+
 }
