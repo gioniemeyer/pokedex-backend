@@ -1,15 +1,26 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { getRepository } from "typeorm";
+import "../../src/setup";
+import faker from "faker";
 
-import User from "../../src/entities/User";
-
-export async function createUser () {
-	const user = await getRepository(User).create({
-		email: "email@email.com",
-		password: "123456"
-	});
-
-	await getRepository(User).save(user);
-
-	return user;
+export default function generateSignUpBody () {
+	const password = faker.internet.password();
+	return {
+		email: faker.internet.email(),
+		password,
+		confirmPassword: password
+	};
 }
+
+// const user = generateSignUpBody();
+// const signInBody = {
+// 	email: user.email,
+// 	password: user.password
+// };
+// const incompleteSignInBody = {
+// 	email: user.email
+// };
+// const wrongSignInBody = {
+// 	email: user.email,
+// 	password: user.password + "erro"
+// };
+
