@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import "../../src/setup";
 import faker from "faker";
+import { getRepository } from "typeorm";
+import User from "../../src/entities/User";
+import bcrypt from "bcrypt";
 
-export default function generateSignUpBody () {
+export function generateSignUpBody () {
 	const password = faker.internet.password();
 	return {
 		email: faker.internet.email(),
@@ -11,16 +14,23 @@ export default function generateSignUpBody () {
 	};
 }
 
-// const user = generateSignUpBody();
-// const signInBody = {
-// 	email: user.email,
-// 	password: user.password
-// };
-// const incompleteSignInBody = {
-// 	email: user.email
-// };
-// const wrongSignInBody = {
-// 	email: user.email,
-// 	password: user.password + "erro"
-// };
+export function generateSignInBody () {
+	const password = faker.internet.password();
+	return {
+		email: faker.internet.email(),
+		password,
+	};
+}
 
+export async function createUser() {
+	const user = generateSignInBody();
+	const newUser = await getRepository(User).create({
+		email: user.email,
+		password: bcrypt.hashSync(user.password,10)
+	});
+	await getRepository(User).save(newUser);
+	return 	user;
+}
+
+
+export default {generateSignUpBody, generateSignInBody, createUser};
